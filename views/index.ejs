@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form action="" id="form">
+        <br><br><br><br>
+        <input type="hidden" name="emp_id" id="emp_id">
+        <label for="firstName">First Name</label>
+        <input type="text" name="firstName" id="firstName">
+        <label for="lastName">last Name</label>
+        <input type="text" name="lastName" id="lastName">
+        <button id="submit">Submit</button>
+    </form>
+    <br><br>
+    <div>message:- <span class="msg"></span></div>
+    <br><br>
+        <table>
+            <th>
+                <tr>
+                    <td>First Name</td>
+                    <td>Second Name</td>
+                    <td>Action</td>
+                </tr>
+            </th>
+            <tbody>
+                <% data.forEach(item =>{%>
+                   <tr>
+                    <td><%= item.firstName %></td>
+                    <td><%= item.lastName %></td>
+                    <td id="delete" data_id="<%= item._id %>">delete</td>
+                    <td id="update" data_id="<%= item._id %>">Update</td>
+                   </tr>
+                <%}) %>
+            </tbody>
+
+        </table>
+        
+
+        <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+        <script>
+            
+            document.querySelector('#form').addEventListener('submit', (e)=>{
+                e.preventDefault();
+                let firstName = document.querySelector('#firstName').value
+                let lastName = document.querySelector('#lastName').value
+                let emp_id = document.querySelector('#emp_id').value
+                
+                if(emp_id){
+                    $.ajax({
+                        url:'/api/employee',
+                        data: {firstName:firstName, lastName:lastName, id:emp_id},
+                        method:'PATCH',
+                        success: function(resp){
+                            if(resp.status == true){
+                                $('.msg').html(resp.message);
+                                location.reload();
+                            }
+                        }
+                    })
+                }else{
+                        $.ajax({
+                        url:'/api/employee',
+                        data: {firstName:firstName, lastName:lastName},
+                        method:'POST',
+                        success: function(resp){
+                            if(resp.status == true){
+                                $('.msg').html(resp.message);
+                                location.reload();
+                            }
+                        }
+                    })
+                }
+               
+            })
+
+            $(document).on('click','#delete', function(){
+                let id = $(this).attr('data_id');
+                let currentDiv = $(this).closest('tr');
+
+                $.ajax({
+                    url: '/api/employee/'+id,
+                    method:'DELETE',
+                    success:function(resp){
+                        if(resp.status == true){
+                            $('.msg').html(resp.message);
+                            currentDiv.remove();
+                        }
+                    }
+                })
+            })
+
+            $(document).on('click', '#update', function(){
+                console.log('clicked');
+                let id = $(this).attr('data_id')
+                $.ajax({
+                    url:'/api/employee/'+id,
+                    method:'GET',
+                    success:function(resp){
+                        console.log(resp);
+                        if(resp.status == true){
+                            $('#firstName').val(resp.data.firstName)
+                            $('#lastName').val(resp.data.lastName)
+                            $('#emp_id').val(resp.data._id)
+                        }
+                    }
+                })
+            })
+        </script>
+</body>
+</html>
